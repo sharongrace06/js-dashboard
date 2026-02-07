@@ -1,0 +1,165 @@
+.insights {
+    display: none;
+  }
+  
+/* ===== Chart Report Cards ===== */
+
+.chart-placeholder {
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 12px;
+  padding: 18px;
+  margin: 24px 0;
+
+  max-width: 900px;
+  height: 420px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+}
+
+/* Make charts responsive inside card */
+.chart-placeholder canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
+/* ===== Section Banner Headers ===== */
+
+.year-section h2,
+.comparison-section h2,
+.input-section h2 {
+  background: #111;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  margin-bottom: 18px;
+}
+/* ===== Input Panel ===== */
+
+.input-section {
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 12px;
+  padding: 22px;
+  margin-bottom: 40px;
+
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+/* cleaner professional heading font */
+.year-section h2,
+.comparison-section h2,
+.input-section h2 {
+  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 20px;
+}
+
+
+/* ===== Image Report Card ===== */
+
+.image-placeholder {
+  display: block;
+
+  max-width: 900px;
+  height: 420px;
+
+  object-fit: contain;
+  background: #ffffff;
+
+  border: 1px solid #dcdcdc;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 24px 0;
+
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+}
+
+.image-placeholder[hidden] {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 14px;
+}
+
+.image-placeholder[hidden]::before {
+  content: "No image added";
+}
+
+/* ===== Button Soft Styling ===== */
+
+.btn-outline-primary,
+.btn-outline-danger,
+.btn-outline-secondary {
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 500;
+}
+
+.image-actions {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* breathing room after page title */
+.app-header {
+  margin-bottom: 60px;
+}
+
+/* prevent container from collapsing the space */
+main.container {
+  margin-top: 0;
+}
+
+
+/* Comparison Table Container */
+#comparison-table-container {
+  margin-top: 25px;
+  padding: 20px 22px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+
+#comparison-table-container table thead th {
+  background: #111827;
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  border: none;
+  padding: 14px 10px;
+}
+
+#comparison-table-container table tbody td {
+  padding: 16px 10px;
+  font-size: 15px;
+  color: #1f2937;
+}
+
+#comparison-table-container table tbody tr {
+  transition: background 0.18s ease;
+}
+
+#comparison-table-container table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* ================= PDF MODE ================= */
+
+.print-mode .no-print {
+  display: none !important;
+}
+
+

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Metrics Dashboard</title>
+        <link rel="stylesheet" href="./css/styles.css">
+        <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"/>
+
+    </head>
+    <body>
+        <header class="app-header text-center mb-5">
+            <h1 class="fw-bold">Analytics Dashboard</h1>
+            <p class="subtitle text-muted">Overview of key performance metrics</p>
+        </header>
+                
+        <main class="container my-5">
+            <!-- ================= INPUT SECTION ================= -->
+            <section class="input-section">
+                <h2>Add Data</h2>
+            
+                <form id="data-form" class="row g-2 align-items-end">
+                <!-- Month Selection  -->
+                <select id="input-month" class="form-select col">
+                    <option value="">Select Month</option>
+                </select> 
+                
+                <input type="number" placeholder="NOB" id="input-nob" class="form-control col"/>
+                <input type="number" placeholder="HC" id="input-hc" class="form-control col"/>
+                <input type="number" placeholder="LC" id="input-lc" class="form-control col"/>
+                <input type="number" placeholder="CN" id="input-cn" class="form-control col"/>
+            
+                <select id="year-selector" class="form-select col">
+                    <option value="2026">2026 - Data Table</option>
+                    <option value="2025">2025 - Data Table</option>
+                    <option value="2024">2024 - Data Table</option>
+                </select>
+            
+                <button type="submit" class="btn btn-primary col-auto">Add Entry</button>
+                </form>
+            </section>
+            
+            <!-- ================= YEAR SECTIONS ================= -->
+            
+            <!-- 2026 -->
+            <section class="year-section mb-5" data-year="2026">
+                <h2>2026 - Data Table</h2>
+            
+                <table class="table table-bordered table-striped align-middle">
+                <thead>
+                    <tr>
+                    <th>Month</th>
+                    <th>NOB</th>
+                    <th>HC</th>
+                    <th>LC</th>
+                    <th>CN</th>
+                    <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="table-2026">
+                    <!-- Rows injected by JS -->
+                </tbody>
+               
+                </table>
+            
+                <button class="btn btn-sm btn-outline-primary view-insights" data-year="2026">View Insights</button>
+            
+                <div class="insights mt-4" id="insights-2026">
+                <!-- Charts + image placeholders -->
+                 <h3>Insights</h3>
+                 <div class="chart-placeholder bar-chart">
+                    <canvas id="bar-chart-2026"></canvas>
+                 </div>
+
+                 <div class="chart-placeholder line-chart">
+                    <canvas id="line-chart-2026"></canvas>
+                 </div>
+
+                 <img id ="image-2026" 
+                 class="image-placeholder"
+                 alt="No image added"
+                 hidden
+                 />
+                 <input type="file" accept="image/*" id="image-input-2026" hidden/>
+                <!--Image Action-->
+                <div class="image-actions mt-2">
+                    <button
+                      class="btn btn-sm btn-outline-primary add-image"
+                      data-year="2026"
+                    >
+                      Add Image
+                    </button>
+                  
+                    <button
+                      class="btn btn-sm btn-outline-danger remove-image"
+                      data-year="2026"
+                      disabled
+                    >
+                      Remove Image
+                    </button>
+                  </div>
+                  
+                </div>
+            
+                <button class="btn btn-sm btn-outline-secondary download-btn" data-year="2026">
+                Download 2026 Report
+                </button>
+            </section>
+            
+            <!-- 2025 -->
+            <section class="year-section mb-5" data-year="2025">
+                <h2>2025 - Data Table</h2>
+            
+                <table class="table table-bordered table-striped align-middle">
+                <thead>
+                    <tr>
+                    <th>Month</th>
+                    <th>NOB</th>
+                    <th>HC</th>
+                    <th>LC</th>
+                    <th>CN</th>
+                    <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="table-2025"></tbody>
+                
+                </table>
+            
+                <button class="btn btn-sm btn-outline-primary view-insights" data-year="2025">View Insights</button>
+                <div class="insights mt-4" id="insights-2025">
+
+                    <h3>Insights</h3>
+                    <div class="chart-placeholder bar-chart">
+                        <canvas id="bar-chart-2025"></canvas>
+                    </div>
+
+                    <div class="chart-placeholder line-chart">
+                        <canvas id="line-chart-2025"></canvas>
+                    </div>
+
+                    <img id ="image-2025" 
+                    class="image-placeholder"
+                    alt="No image added"
+                    hidden
+                    />
+                    <input type="file" accept="image/*" id="image-input-2025" hidden/>
+                    <!--Image Action -->
+                    <div class="image-actions mt-2">
+                        <button
+                          class="btn btn-sm btn-outline-primary add-image"
+                          data-year="2025"
+                        >
+                          Add Image
+                        </button>
+                      
+                        <button
+                          class="btn btn-sm btn-outline-danger remove-image"
+                          data-year="2025"
+                          disabled
+                        >
+                          Remove Image
+                        </button>
+                    </div>                      
+                </div>
+            
+                <button class="btn btn-sm btn-outline-secondary download-btn" data-year="2025">
+                Download 2025 Report
+                </button>
+            </section>
+            
+            <!-- 2024 -->
+            <section class="year-section mb-5" data-year="2024">
+                <h2>2024 - Data Table</h2>
+            
+                <table class="table table-bordered table-striped align-middle">
+                <thead>
+                    <tr>
+                    <th>Month</th>
+                    <th>NOB</th>
+                    <th>HC</th>
+                    <th>LC</th>
+                    <th>CN</th>
+                    <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="table-2024"></tbody>
+               
+                </table>
+            
+                <button class="btn btn-sm btn-outline-primary view-insights" data-year="2024">View Insights</button>
+                <div class="insights mt-4" id="insights-2024">
+
+                    <h3>Insights</h3>
+                    <div class="chart-placeholder bar-chart">
+                        <canvas id="bar-chart-2024"></canvas>
+                    </div>
+
+                    <div class="chart-placeholder line-chart">
+                        <canvas id="line-chart-2024"></canvas>
+                    </div>
+
+                    <img id ="image-2024" 
+                    class="image-placeholder"
+                    alt="No image added"
+                    hidden
+                    />
+                    <input type="file" accept="image/*" id="image-input-2024" hidden/>
+                    <div class="image-actions mt-2">
+                        <button
+                          class="btn btn-sm btn-outline-primary add-image"
+                          data-year="2024"
+                        >
+                          Add Image
+                        </button>
+                      
+                        <button
+                          class="btn btn-sm btn-outline-danger remove-image"
+                          data-year="2024"
+                          disabled
+                        >
+                          Remove Image
+                        </button>
+                    </div>
+                      
+                </div>
+            
+                <button class="btn btn-sm btn-outline-secondary download-btn" data-year="2024">
+                Download 2024 Report
+                </button>
+            </section>
+            
+            <!-- ================= COMPARISON SECTION ================= -->
+            <section class="comparison-section">
+                <h2>Comparison Insights </h2>
+            
+                <div id="comparison-insights">
+                <!-- bar charts -->
+                 <div class="chart-placeholder bar-chart">
+                    <canvas id="comparison-bar-chart"></canvas>
+                 </div>
+                <!-- Line chart -->
+                 <div class="chart-placeholder line-chart">
+                    <canvas id="comparison-line-chart"></canvas>
+                 </div>
+                </div>
+
+                <div id="comparison-table-container" class="mt-4"></div>
+            
+                <button id="download-comparison" class="btn btn-sm btn-outline-primary">
+                Download Comparison Report
+                </button>
+            </section>
+            
+<!-- ================= ADD NEW SECTION ================= -->
+     
+
+</main>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+        <script type="module" src="./js/main.js"></script>
+    </body>
+</html>
+
