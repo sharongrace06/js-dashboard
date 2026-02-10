@@ -269,67 +269,59 @@ document.addEventListener("click", function (event) {
     event.target.disabled = true;
   });
   
+//inisghts sections download 
+
 document.addEventListener("click", async function (event) {
-    if (!event.target.matches(".download-btn")) return;
-  
-    const year = event.target.dataset.year;
-    const section = document.querySelector(
-      `.year-section[data-year="${year}"]`
-    );
-  
-    if (!section) return;
+  if (!event.target.matches(".download-btn")) return;
 
-    // 🟢 ENTER PDF MODE
-    document.body.classList.add("print-mode");
+  const year = event.target.dataset.year;
+  const section = document.querySelector(`.year-section[data-year="${year}"]`);
+  if (!section) return;
 
-    // allow layout to update before capture
-    await new Promise(resolve => setTimeout(resolve, 200));
+  // enter print mode
+  document.body.classList.add("print-mode");
+  await new Promise(resolve => setTimeout(resolve, 300));
 
-  
-    // 1️⃣ Capture section as canvas
-    const canvas = await html2canvas(section, {
-      scale: 2, // better quality
-      useCORS: true
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+
+  // 👇 read our HTML labels
+  const pages = section.querySelectorAll(".pdf-page");
+
+  let firstPage = true;
+
+  for (const element of pages) {
+
+    if (element.hidden) continue;
+
+    if (!firstPage) pdf.addPage();
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff"
     });
-  
+
     const imgData = canvas.toDataURL("image/png");
-  
-    // 2️⃣ Create PDF
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("p", "mm", "a4");
-  
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-  
-    // 3️⃣ Calculate dimensions
+
     const imgWidth = pageWidth;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  
-    let y = 0;
-  
-    // 4️⃣ Handle multi-page content
-    if (imgHeight <= pageHeight) {
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-    } else {
-      let remainingHeight = imgHeight;
-  
-      while (remainingHeight > 0) {
-        pdf.addImage(imgData, "PNG", 0, y, imgWidth, imgHeight);
-        remainingHeight -= pageHeight;
-        y -= pageHeight;
-  
-        if (remainingHeight > 0) {
-          pdf.addPage();
-        }
-      }
-    }
-  
-    // 5️⃣ Download
-    pdf.save(`Analytics_Report_${year}.pdf`);
 
-    // 🔴 EXIT PDF MODE
-    document.body.classList.remove("print-mode");
-  });
+    const yOffset = Math.max(0, (pageHeight - imgHeight) / 2);
+
+    pdf.addImage(imgData, "PNG", 0, yOffset, imgWidth, imgHeight);
+
+    firstPage = false;
+  }
+
+  pdf.save(`Analytics_Report_${year}.pdf`);
+
+  document.body.classList.remove("print-mode");
+});
+
   
 // download - Comparison Section 
 
