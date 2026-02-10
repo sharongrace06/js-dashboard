@@ -278,9 +278,22 @@ document.addEventListener("click", async function (event) {
   const section = document.querySelector(`.year-section[data-year="${year}"]`);
   if (!section) return;
 
-  // enter print mode
   document.body.classList.add("print-mode");
-  await new Promise(resolve => setTimeout(resolve, 300));
+
+  // 1️⃣ Force insights visible
+  const insights = section.querySelectorAll(".insights");
+  insights.forEach(el => el.style.display = "block");
+
+  // 2️⃣ Force chart rendering
+  const metrics = totalMetrics(year);
+  renderBarChart(year, metrics);
+
+  const entries = getEntriesByYear(year);
+  renderLineChart(year, entries);
+
+  // 3️⃣ Wait for paint
+  await new Promise(r => requestAnimationFrame(r));
+  await new Promise(r => requestAnimationFrame(r));
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p", "mm", "a4");
@@ -288,21 +301,19 @@ document.addEventListener("click", async function (event) {
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  // 👇 read our HTML labels
   const pages = section.querySelectorAll(".pdf-page");
 
   let firstPage = true;
 
   for (const element of pages) {
-
-    if (element.hidden) continue;
-
     if (!firstPage) pdf.addPage();
 
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
-      backgroundColor: "#ffffff"
+      backgroundColor: "#ffffff",
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight
     });
 
     const imgData = canvas.toDataURL("image/png");
@@ -319,8 +330,11 @@ document.addEventListener("click", async function (event) {
 
   pdf.save(`Analytics_Report_${year}.pdf`);
 
+  // restore UI
+  insights.forEach(el => el.style.display = "");
   document.body.classList.remove("print-mode");
 });
+
 
   
 // download - Comparison Section 
