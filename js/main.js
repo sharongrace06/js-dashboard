@@ -281,47 +281,48 @@ document.addEventListener("click", async function (event) {
   const originalSection = document.querySelector(`.year-section[data-year="${year}"]`);
   if (!originalSection) return;
 
-  // --------------------------------------------------
-  // 1. CLONE SECTION (safe export sandbox)
-  // --------------------------------------------------
+  // ================================
+  // 1. CREATE SAFE CLONE (EXPORT SANDBOX)
+  // ================================
   const clone = originalSection.cloneNode(true);
+
   clone.style.position = "fixed";
   clone.style.left = "-9999px";
   clone.style.top = "0";
-  clone.style.width = "794px"; // A4 width
+  clone.style.width = "794px"; // A4 width in px
   clone.style.background = "white";
+
   document.body.appendChild(clone);
 
-  // remove buttons
+  // remove buttons from export
   clone.querySelectorAll("button").forEach(btn => btn.remove());
 
-  // force insights visible
+  // ensure insights visible
   clone.querySelectorAll(".insights").forEach(el => el.style.display = "block");
 
-  // --------------------------------------------------
-  // 2. ADD TITLE INTO FIRST PAGE
-  // --------------------------------------------------
-  const title = originalSection.querySelector("h2");
+  // ================================
+  // 2. MOVE TITLE INTO FIRST PAGE
+  // ================================
+  const title = clone.querySelector("h2");
   const firstPdfPage = clone.querySelector(".pdf-page");
 
   if (title && firstPdfPage) {
-    const titleClone = title.cloneNode(true);
-    titleClone.style.marginBottom = "16px";
-    titleClone.style.fontWeight = "bold";
-    firstPdfPage.prepend(titleClone);
+    title.remove();
+    firstPdfPage.prepend(title);
   }
 
-  // --------------------------------------------------
-  // 3. REMOVE PREVIEW IMAGE FROM PAGE 1
-  // --------------------------------------------------
+  // ================================
+  // 3. REMOVE PREVIEW LEAFLET MAP
+  // (prevents duplicate image page)
+  // ================================
   if (firstPdfPage) {
-    const previewImage = firstPdfPage.querySelector("img");
-    if (previewImage) previewImage.remove();
+    const leafletPreview = firstPdfPage.querySelector(".leaflet-container");
+    if (leafletPreview) leafletPreview.remove();
   }
 
-  // --------------------------------------------------
+  // ================================
   // 4. RENDER CHARTS INSIDE CLONE ONLY
-  // --------------------------------------------------
+  // ================================
   const metrics = totalMetrics(year);
   const entries = getEntriesByYear(year);
 
@@ -357,12 +358,12 @@ document.addEventListener("click", async function (event) {
     });
   }
 
-  // wait for charts to paint
+  // allow charts to paint
   await new Promise(r => setTimeout(r, 300));
 
-  // --------------------------------------------------
-  // 5. GENERATE PDF
-  // --------------------------------------------------
+  // ================================
+  // 5. CREATE PDF
+  // ================================
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p", "mm", "a4");
 
@@ -393,11 +394,12 @@ document.addEventListener("click", async function (event) {
 
   pdf.save(`Analytics_Report_${year}.pdf`);
 
-  // --------------------------------------------------
+  // ================================
   // 6. CLEANUP
-  // --------------------------------------------------
+  // ================================
   clone.remove();
 });
+
 
 
 
