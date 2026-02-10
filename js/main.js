@@ -268,45 +268,89 @@ document.addEventListener("click", function (event) {
     // Disable remove button again
     event.target.disabled = true;
   });
-  
+
+
+
+
 //inisghts sections download 
 
 document.addEventListener("click", async function (event) {
   if (!event.target.matches(".download-btn")) return;
 
   const year = event.target.dataset.year;
-  const section = document.querySelector(`.year-section[data-year="${year}"]`);
-  if (!section) return;
+  const originalSection = document.querySelector(`.year-section[data-year="${year}"]`);
+  if (!originalSection) return;
 
-  document.body.classList.add("print-mode");
+  // -----------------------------------------
+  // 1. CLONE THE SECTION (safe sandbox)
+  // -----------------------------------------
+  const clone = originalSection.cloneNode(true);
+  clone.style.position = "fixed";
+  clone.style.left = "-9999px";
+  clone.style.top = "0";
+  clone.style.width = "794px"; // A4 width
+  clone.style.background = "white";
+  document.body.appendChild(clone);
 
-  // 1️⃣ Force insights visible
-  const insights = section.querySelectorAll(".insights");
-  insights.forEach(el => el.style.display = "block");
+  // remove buttons from clone
+  clone.querySelectorAll("button").forEach(btn => btn.remove());
 
-  // 2️⃣ Force chart rendering
+  // force insights visible
+  clone.querySelectorAll(".insights").forEach(el => el.style.display = "block");
 
-  destroyBarChart(year);
-  destroyLineChart(year);  
-    
+  // -----------------------------------------
+  // 2. RENDER CHARTS INSIDE CLONE ONLY
+  // -----------------------------------------
   const metrics = totalMetrics(year);
-  renderBarChart(year, metrics);
-
   const entries = getEntriesByYear(year);
-  renderLineChart(year, entries);
 
-  // 3️⃣ Wait for paint
-  await new Promise(r => requestAnimationFrame(r));
-  await new Promise(r => requestAnimationFrame(r));
+  // Bar chart
+  const barCanvas = clone.querySelector(`#bar-chart-${year}`);
+  if (barCanvas) {
+    new Chart(barCanvas, {
+      type: "bar",
+      data: {
+        labels: ["NOB", "HC", "LC", "CN"],
+        datasets: [{
+          label: `${year} Totals`,
+          data: [metrics.nob, metrics.hc, metrics.lc, metrics.cn]
+        }]
+      },
+      options: { animation: false, responsive: false }
+    });
+  }
 
+  // Line chart
+  const lineCanvas = clone.querySelector(`#line-chart-${year}`);
+  if (lineCanvas) {
+    new Chart(lineCanvas, {
+      type: "line",
+      data: {
+        labels: entries.map(e => MONTHS[e.monthIndex]),
+        datasets: [
+          { label: "NOB", data: entries.map(e => e.nob) },
+          { label: "HC", data: entries.map(e => e.hc) },
+          { label: "LC", data: entries.map(e => e.lc) },
+          { label: "CN", data: entries.map(e => e.cn) }
+        ]
+      },
+      options: { animation: false, responsive: false }
+    });
+  }
+
+  // wait for paint
+  await new Promise(r => setTimeout(r, 300));
+
+  // -----------------------------------------
+  // 3. CREATE PDF
+  // -----------------------------------------
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p", "mm", "a4");
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  const pages = section.querySelectorAll(".pdf-page");
-
+  const pages = clone.querySelectorAll(".pdf-page");
   let firstPage = true;
 
   for (const element of pages) {
@@ -314,40 +358,29 @@ document.addEventListener("click", async function (event) {
 
     const canvas = await html2canvas(element, {
       scale: 2,
-      useCORS: true,
       backgroundColor: "#ffffff",
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight,
-      scrollY: -window.scrollY,
-  
+      useCORS: true
     });
 
-    const imgData = canvas.toDataURL("image/png");
-
-    // calculate scale to FIT inside page
-    const ratio = Math.min(
-      pageWidth / canvas.width,
-      pageHeight / canvas.height
-    );
-    
+    const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
     const imgWidth = canvas.width * ratio;
     const imgHeight = canvas.height * ratio;
-    
-    // center on page
-    const xOffset = (pageWidth - imgWidth) / 2;
-    const yOffset = (pageHeight - imgHeight) / 2;
-    
-    pdf.addImage(imgData, "PNG", xOffset, yOffset, imgWidth, imgHeight);
+    const x = (pageWidth - imgWidth) / 2;
+    const y = (pageHeight - imgHeight) / 2;
+
+    pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
 
     firstPage = false;
   }
 
   pdf.save(`Analytics_Report_${year}.pdf`);
 
-  // restore UI
-  insights.forEach(el => el.style.display = "");
-  document.body.classList.remove("print-mode");
+  // -----------------------------------------
+  // 4. CLEANUP
+  // -----------------------------------------
+  clone.remove();
 });
+
 
 
   
