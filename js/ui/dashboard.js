@@ -114,8 +114,16 @@ function renderBarChart(year, metrics) {
         responsive: true,
         scales: {
           y: { beginAtZero: true }
+        },
+      plugins:{
+          tooltip: {
+          enabled: false   
+        },
+        legend: {
+          display: true
         }
-      }
+      }   
+    }
     });
   
     barChartCanvas._chart = chart;
@@ -186,6 +194,14 @@ function renderLineChart(year, entries){
           responsive: true,
           scales: {
             y: { beginAtZero: true }
+          },
+        plugins: {
+            tooltip: {
+              enabled: false   // ✅ DISABLED
+            },
+            legend: {
+              position: "top"
+            }
           }
         }
       });
@@ -252,9 +268,15 @@ function renderComparisonBarChart(){
     data,
     options: {
       responsive: true,
+     
       plugins: {
-        legend: { position: "top" }
-      }
+            tooltip: {
+              enabled: false
+            },
+            legend: {
+              position: "top"
+            }
+          }        
     }
   });
 }
