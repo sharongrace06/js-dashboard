@@ -377,26 +377,50 @@ document.addEventListener("click", async function (event) {
   const pageHeight = pdf.internal.pageSize.getHeight();
 
   const pages = clone.querySelectorAll(".pdf-page");
-  let firstPage = true;
 
-  for (const element of pages) {
-    if (!firstPage) pdf.addPage();
+  let isFirst = true;
+    
+  for (const page of pages) {
+    
+      // Special handling for first page (table + charts)
+      if (page.querySelector("table")) {
+    
+        // ---- PAGE A: TABLE ONLY ----
+        const tableOnly = page.cloneNode(true);
+        tableOnly.querySelector(".insights")?.remove();
+    
+        const tableCanvas = await html2canvas(tableOnly, { scale: 2, backgroundColor:"#fff" });
+        if (!isFirst) pdf.addPage();
+        addCanvasToPdf(pdf, tableCanvas, pageWidth, pageHeight);
+        isFirst = false;
+    
+        // ---- PAGE B: CHARTS ONLY ----
+        const chartsOnly = page.cloneNode(true);
+        chartsOnly.querySelector("table")?.remove();
+        chartsOnly.querySelector(".view-insights")?.remove();
+    
+        const chartsCanvas = await html2canvas(chartsOnly, { scale: 2, backgroundColor:"#fff" });
+        pdf.addPage();
+        addCanvasToPdf(pdf, chartsCanvas, pageWidth, pageHeight);
+    
+      }
+      else {
+        // image page
+        const canvas = await html2canvas(page, { scale: 2, backgroundColor:"#fff" });
+        pdf.addPage();
+        addCanvasToPdf(pdf, canvas, pageWidth, pageHeight);
+      }
+    }
+    
+    function addCanvasToPdf(pdf, canvas, pageWidth, pageHeight){
+      const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
+      const imgWidth = canvas.width * ratio;
+      const imgHeight = canvas.height * ratio;
+      const x = (pageWidth - imgWidth) / 2;
+      const y = (pageHeight - imgHeight) / 2;
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
+    }
 
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      backgroundColor: "#ffffff",
-      useCORS: true
-    });
-
-    const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
-    const imgWidth = canvas.width * ratio;
-    const imgHeight = canvas.height * ratio;
-    const x = (pageWidth - imgWidth) / 2;
-    const y = (pageHeight - imgHeight) / 2;
-
-    pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
-    firstPage = false;
-  }
 
   pdf.save(`Analytics_Report_${year}.pdf`);
 
