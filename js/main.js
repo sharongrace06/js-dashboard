@@ -285,6 +285,10 @@ document.addEventListener("click", async function (event) {
   insights.forEach(el => el.style.display = "block");
 
   // 2️⃣ Force chart rendering
+
+  destroyBarChart(year);
+  destroyLineChart(year);  
+    
   const metrics = totalMetrics(year);
   renderBarChart(year, metrics);
 
