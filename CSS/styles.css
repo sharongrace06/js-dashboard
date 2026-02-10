@@ -183,10 +183,18 @@ main.container {
     display: none !important;
 }
 
-/* charts fit page */
-.pdf-export canvas {
-    max-height: 350px !important;
+/* Make charts auto-fit remaining page space */
+.pdf-export .chart-placeholder {
+    height: 260px !important;
+    margin: 14px 0 !important;
+    padding: 12px !important;
 }
+
+.pdf-export .chart-placeholder canvas {
+    height: 100% !important;
+    width: 100% !important;
+}
+
 
 
 
