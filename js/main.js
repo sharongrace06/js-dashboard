@@ -18,6 +18,47 @@ import { renderComparisonTable } from "./ui/dashboard.js";
 
 
 
+//-----------------------------------------------
+// ===== ALWAYS SHOW VALUES ON CHARTS =====
+//----------------------------------------------
+
+Chart.register({
+  id: "alwaysShowValues",
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    ctx.save();
+
+    chart.data.datasets.forEach((dataset, datasetIndex) => {
+      const meta = chart.getDatasetMeta(datasetIndex);
+
+      meta.data.forEach((element, index) => {
+        const value = dataset.data[index];
+
+        if (value === null || value === undefined) return;
+
+        ctx.fillStyle = "#111";
+        ctx.font = "bold 12px Inter, sans-serif";
+        ctx.textAlign = "center";
+
+        const position = element.tooltipPosition();
+
+        // For bar charts (above bar)
+        if (chart.config.type === "bar") {
+          ctx.fillText(value, position.x, position.y - 8);
+        }
+
+        // For line charts (above point)
+        if (chart.config.type === "line") {
+          ctx.fillText(value, position.x, position.y - 10);
+        }
+      });
+    });
+
+    ctx.restore();
+  }
+});
+
+
 //-----------------------------------------------------------------
 // Render the UI once from the current state when the app starts.
 //-----------------------------------------------------------------
