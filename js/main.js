@@ -293,6 +293,8 @@ document.addEventListener("click", async function (event) {
   clone.style.background = "white";
 
   document.body.appendChild(clone);
+  document.body.classList.add("pdf-export");
+
 
   // remove buttons from export
   clone.querySelectorAll("button").forEach(btn => btn.remove());
@@ -397,6 +399,7 @@ document.addEventListener("click", async function (event) {
   // ================================
   // 6. CLEANUP
   // ================================
+  document.body.classList.remove("pdf-export");
   clone.remove();
 });
 
