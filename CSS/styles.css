@@ -164,37 +164,6 @@ main.container {
 
 
 
-/* ===== FORCE REAL PAGE SIZE FOR EXPORT ===== */
-.pdf-export .pdf-page {
-    width: 794px;
-    height: 1123px;        /* exact A4 height */
-    overflow: hidden;      /* prevents content bleeding */
-    box-sizing: border-box;
-    padding: 24px;
-    background: white;
-    position: relative;
-    page-break-after: always;
-}
-
-/* prevent UI controls affecting height */
-.pdf-export .image-actions,
-.pdf-export input[type="file"],
-.pdf-export .view-insights {
-    display: none !important;
-}
-
-/* Make charts auto-fit remaining page space */
-.pdf-export .chart-placeholder {
-    height: 260px !important;
-    margin: 14px 0 !important;
-    padding: 12px !important;
-}
-
-.pdf-export .chart-placeholder canvas {
-    height: 100% !important;
-    width: 100% !important;
-}
-
 .pdf-export th:last-child,
 .pdf-export td:last-child {
   display: none !important;
