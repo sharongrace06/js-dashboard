@@ -195,6 +195,11 @@ main.container {
     width: 100% !important;
 }
 
+.pdf-export th:last-child,
+.pdf-export td:last-child {
+  display: none !important;
+}
+
 
 
 
