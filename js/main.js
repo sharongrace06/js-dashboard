@@ -295,6 +295,10 @@ document.addEventListener("click", async function (event) {
   document.body.appendChild(clone);
   document.body.classList.add("pdf-export");
 
+ // 🔴 WAIT FOR LAYOUT TO APPLY
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
+
 
   // remove buttons from export
   clone.querySelectorAll("button").forEach(btn => btn.remove());
