@@ -281,9 +281,9 @@ document.addEventListener("click", async function (event) {
   const originalSection = document.querySelector(`.year-section[data-year="${year}"]`);
   if (!originalSection) return;
 
-  // -----------------------------------------
-  // 1. CLONE THE SECTION (safe sandbox)
-  // -----------------------------------------
+  // --------------------------------------------------
+  // 1. CLONE SECTION (safe export sandbox)
+  // --------------------------------------------------
   const clone = originalSection.cloneNode(true);
   clone.style.position = "fixed";
   clone.style.left = "-9999px";
@@ -292,19 +292,39 @@ document.addEventListener("click", async function (event) {
   clone.style.background = "white";
   document.body.appendChild(clone);
 
-  // remove buttons from clone
+  // remove buttons
   clone.querySelectorAll("button").forEach(btn => btn.remove());
 
   // force insights visible
   clone.querySelectorAll(".insights").forEach(el => el.style.display = "block");
 
-  // -----------------------------------------
-  // 2. RENDER CHARTS INSIDE CLONE ONLY
-  // -----------------------------------------
+  // --------------------------------------------------
+  // 2. ADD TITLE INTO FIRST PAGE
+  // --------------------------------------------------
+  const title = originalSection.querySelector("h2");
+  const firstPdfPage = clone.querySelector(".pdf-page");
+
+  if (title && firstPdfPage) {
+    const titleClone = title.cloneNode(true);
+    titleClone.style.marginBottom = "16px";
+    titleClone.style.fontWeight = "bold";
+    firstPdfPage.prepend(titleClone);
+  }
+
+  // --------------------------------------------------
+  // 3. REMOVE PREVIEW IMAGE FROM PAGE 1
+  // --------------------------------------------------
+  if (firstPdfPage) {
+    const previewImage = firstPdfPage.querySelector("img");
+    if (previewImage) previewImage.remove();
+  }
+
+  // --------------------------------------------------
+  // 4. RENDER CHARTS INSIDE CLONE ONLY
+  // --------------------------------------------------
   const metrics = totalMetrics(year);
   const entries = getEntriesByYear(year);
 
-  // Bar chart
   const barCanvas = clone.querySelector(`#bar-chart-${year}`);
   if (barCanvas) {
     new Chart(barCanvas, {
@@ -320,7 +340,6 @@ document.addEventListener("click", async function (event) {
     });
   }
 
-  // Line chart
   const lineCanvas = clone.querySelector(`#line-chart-${year}`);
   if (lineCanvas) {
     new Chart(lineCanvas, {
@@ -338,12 +357,12 @@ document.addEventListener("click", async function (event) {
     });
   }
 
-  // wait for paint
+  // wait for charts to paint
   await new Promise(r => setTimeout(r, 300));
 
-  // -----------------------------------------
-  // 3. CREATE PDF
-  // -----------------------------------------
+  // --------------------------------------------------
+  // 5. GENERATE PDF
+  // --------------------------------------------------
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p", "mm", "a4");
 
@@ -369,17 +388,17 @@ document.addEventListener("click", async function (event) {
     const y = (pageHeight - imgHeight) / 2;
 
     pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
-
     firstPage = false;
   }
 
   pdf.save(`Analytics_Report_${year}.pdf`);
 
-  // -----------------------------------------
-  // 4. CLEANUP
-  // -----------------------------------------
+  // --------------------------------------------------
+  // 6. CLEANUP
+  // --------------------------------------------------
   clone.remove();
 });
+
 
 
 
