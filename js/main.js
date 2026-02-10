@@ -273,52 +273,60 @@ document.addEventListener("click", function (event) {
 
 
 //inisghts sections download 
-
-// ================= PDF EXPORT (FINAL STABLE VERSION) =================
+// ================== FINAL PDF EXPORT (NO FREEZE VERSION) ==================
 
 document.addEventListener("click", async function (event) {
   if (!event.target.matches(".download-btn")) return;
 
   const year = event.target.dataset.year;
-  const originalSection = document.querySelector(`.year-section[data-year="${year}"]`);
-  if (!originalSection) return;
+  const section = document.querySelector(`.year-section[data-year="${year}"]`);
+  if (!section) return;
 
-  // 1️⃣ CLONE SECTION (safe sandbox)
-  const clone = originalSection.cloneNode(true);
-
+  // clone clean copy
+  const clone = section.cloneNode(true);
   clone.style.position = "fixed";
   clone.style.left = "-9999px";
   clone.style.top = "0";
-  clone.style.width = "1200px";
+  clone.style.width = "1100px";
   clone.style.background = "white";
 
   document.body.appendChild(clone);
-  document.body.classList.add("pdf-export");
 
-  // remove buttons
-  clone.querySelectorAll("button").forEach(btn => btn.remove());
-
-  // remove action column
+  // remove buttons + action column
+  clone.querySelectorAll("button").forEach(b => b.remove());
   clone.querySelectorAll("th:last-child, td:last-child").forEach(el => el.remove());
 
   // show insights
   clone.querySelectorAll(".insights").forEach(el => el.style.display = "block");
 
-  // move title inside
+  // move title inside page
   const title = clone.querySelector("h2");
   const firstPage = clone.querySelector(".pdf-page");
-  if (title && firstPage) {
-    title.remove();
-    firstPage.prepend(title);
-  }
+  if (title && firstPage) firstPage.prepend(title);
 
-  // 2️⃣ RENDER CHARTS INSIDE CLONE ONLY
+  // ---------- RENDER CHARTS AS IMAGES ----------
   const metrics = totalMetrics(year);
   const entries = getEntriesByYear(year);
 
-  const barCanvas = clone.querySelector(`#bar-chart-${year}`);
-  if (barCanvas) {
-    new Chart(barCanvas, {
+  async function chartToImage(canvas, config) {
+    const tempCanvas = document.createElement("canvas");
+    canvas.replaceWith(tempCanvas);
+
+    const chart = new Chart(tempCanvas, config);
+    await new Promise(r => setTimeout(r, 200));
+
+    const img = document.createElement("img");
+    img.src = chart.toBase64Image();
+    img.style.width = "100%";
+
+    tempCanvas.replaceWith(img);
+    chart.destroy();
+  }
+
+  // bar chart
+  const bar = clone.querySelector(`#bar-chart-${year}`);
+  if (bar) {
+    await chartToImage(bar, {
       type: "bar",
       data: {
         labels: ["NOB", "HC", "LC", "CN"],
@@ -327,34 +335,31 @@ document.addEventListener("click", async function (event) {
           data: [metrics.nob, metrics.hc, metrics.lc, metrics.cn]
         }]
       },
-      options: { animation: false, responsive: false }
+      options: { animation:false, responsive:false }
     });
   }
 
-  const lineCanvas = clone.querySelector(`#line-chart-${year}`);
-  if (lineCanvas) {
-    new Chart(lineCanvas, {
+  // line chart
+  const line = clone.querySelector(`#line-chart-${year}`);
+  if (line) {
+    await chartToImage(line, {
       type: "line",
       data: {
         labels: entries.map(e => MONTHS[e.monthIndex]),
         datasets: [
-          { label: "NOB", data: entries.map(e => e.nob) },
-          { label: "HC", data: entries.map(e => e.hc) },
-          { label: "LC", data: entries.map(e => e.lc) },
-          { label: "CN", data: entries.map(e => e.cn) }
+          { label:"NOB", data:entries.map(e=>e.nob) },
+          { label:"HC", data:entries.map(e=>e.hc) },
+          { label:"LC", data:entries.map(e=>e.lc) },
+          { label:"CN", data:entries.map(e=>e.cn) }
         ]
       },
-      options: { animation: false, responsive: false }
+      options:{ animation:false, responsive:false }
     });
   }
 
-  // allow charts to render
-  await new Promise(r => setTimeout(r, 300));
-
-  // 3️⃣ CREATE PDF (true slicing pagination)
+  // ---------- CREATE PDF ----------
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("p", "mm", "a4");
-
+  const pdf = new jsPDF("p","mm","a4");
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
@@ -363,10 +368,10 @@ document.addEventListener("click", async function (event) {
 
   for (const page of pages) {
 
-    const canvas = await html2canvas(page, {
-      scale: 2,
-      backgroundColor: "#ffffff",
-      useCORS: true
+    const canvas = await html2canvas(page,{
+      scale:2,
+      backgroundColor:"#ffffff",
+      useCORS:true
     });
 
     const imgWidth = pageWidth;
@@ -378,18 +383,8 @@ document.addEventListener("click", async function (event) {
     const imgData = canvas.toDataURL("image/png");
 
     while (heightLeft > 0) {
-
       if (!first) pdf.addPage();
-
-      pdf.addImage(
-        imgData,
-        "PNG",
-        0,
-        position,
-        imgWidth,
-        imgHeight
-      );
-
+      pdf.addImage(imgData,"PNG",0,position,imgWidth,imgHeight);
       heightLeft -= pageHeight;
       position -= pageHeight;
       first = false;
@@ -397,11 +392,9 @@ document.addEventListener("click", async function (event) {
   }
 
   pdf.save(`Analytics_Report_${year}.pdf`);
-
-  // cleanup
-  document.body.classList.remove("pdf-export");
   clone.remove();
 });
+
 
 
 
