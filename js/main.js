@@ -299,10 +299,7 @@ document.addEventListener("click", async function (event) {
   // show insights
   clone.querySelectorAll(".insights").forEach(el => el.style.display = "block");
 
-  // move title inside page
-  const title = clone.querySelector("h2");
-  const firstPage = clone.querySelector(".pdf-page");
-  if (title && firstPage) firstPage.prepend(title);
+
 
   // ---------- RENDER CHARTS AS IMAGES ----------
   const metrics = totalMetrics(year);
