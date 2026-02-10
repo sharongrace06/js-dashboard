@@ -274,6 +274,8 @@ document.addEventListener("click", function (event) {
 
 //inisghts sections download 
 
+// ================= PDF EXPORT (FINAL STABLE VERSION) =================
+
 document.addEventListener("click", async function (event) {
   if (!event.target.matches(".download-btn")) return;
 
@@ -281,54 +283,36 @@ document.addEventListener("click", async function (event) {
   const originalSection = document.querySelector(`.year-section[data-year="${year}"]`);
   if (!originalSection) return;
 
-  // ================================
-  // 1. CREATE SAFE CLONE (EXPORT SANDBOX)
-  // ================================
+  // 1️⃣ CLONE SECTION (safe sandbox)
   const clone = originalSection.cloneNode(true);
 
   clone.style.position = "fixed";
   clone.style.left = "-9999px";
   clone.style.top = "0";
-  clone.style.width = "794px"; // A4 width in px
+  clone.style.width = "1200px";
   clone.style.background = "white";
 
   document.body.appendChild(clone);
   document.body.classList.add("pdf-export");
 
- // 🔴 WAIT FOR LAYOUT TO APPLY
-  await new Promise(requestAnimationFrame);
-  await new Promise(requestAnimationFrame);
-
-
-  // remove buttons from export
+  // remove buttons
   clone.querySelectorAll("button").forEach(btn => btn.remove());
 
-  // ensure insights visible
+  // remove action column
+  clone.querySelectorAll("th:last-child, td:last-child").forEach(el => el.remove());
+
+  // show insights
   clone.querySelectorAll(".insights").forEach(el => el.style.display = "block");
 
-  // ================================
-  // 2. MOVE TITLE INTO FIRST PAGE
-  // ================================
+  // move title inside
   const title = clone.querySelector("h2");
-  const firstPdfPage = clone.querySelector(".pdf-page");
-
-  if (title && firstPdfPage) {
+  const firstPage = clone.querySelector(".pdf-page");
+  if (title && firstPage) {
     title.remove();
-    firstPdfPage.prepend(title);
+    firstPage.prepend(title);
   }
 
-  // ================================
-  // 3. REMOVE PREVIEW LEAFLET MAP
-  // (prevents duplicate image page)
-  // ================================
-  if (firstPdfPage) {
-    const leafletPreview = firstPdfPage.querySelector(".leaflet-container");
-    if (leafletPreview) leafletPreview.remove();
-  }
-
-  // ================================
-  // 4. RENDER CHARTS INSIDE CLONE ONLY
-  // ================================
+  // 2️⃣ RENDER CHARTS INSIDE CLONE ONLY
   const metrics = totalMetrics(year);
   const entries = getEntriesByYear(year);
 
@@ -364,12 +348,10 @@ document.addEventListener("click", async function (event) {
     });
   }
 
-  // allow charts to paint
+  // allow charts to render
   await new Promise(r => setTimeout(r, 300));
 
-  // ================================
-  // 5. CREATE PDF
-  // ================================
+  // 3️⃣ CREATE PDF (true slicing pagination)
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p", "mm", "a4");
 
@@ -377,56 +359,46 @@ document.addEventListener("click", async function (event) {
   const pageHeight = pdf.internal.pageSize.getHeight();
 
   const pages = clone.querySelectorAll(".pdf-page");
+  let first = true;
 
-  let isFirst = true;
-    
   for (const page of pages) {
-    
-      // Special handling for first page (table + charts)
-      if (page.querySelector("table")) {
-    
-        // ---- PAGE A: TABLE ONLY ----
-        const tableOnly = page.cloneNode(true);
-        tableOnly.querySelector(".insights")?.remove();
-    
-        const tableCanvas = await html2canvas(tableOnly, { scale: 2, backgroundColor:"#fff" });
-        if (!isFirst) pdf.addPage();
-        addCanvasToPdf(pdf, tableCanvas, pageWidth, pageHeight);
-        isFirst = false;
-    
-        // ---- PAGE B: CHARTS ONLY ----
-        const chartsOnly = page.cloneNode(true);
-        chartsOnly.querySelector("table")?.remove();
-        chartsOnly.querySelector(".view-insights")?.remove();
-    
-        const chartsCanvas = await html2canvas(chartsOnly, { scale: 2, backgroundColor:"#fff" });
-        pdf.addPage();
-        addCanvasToPdf(pdf, chartsCanvas, pageWidth, pageHeight);
-    
-      }
-      else {
-        // image page
-        const canvas = await html2canvas(page, { scale: 2, backgroundColor:"#fff" });
-        pdf.addPage();
-        addCanvasToPdf(pdf, canvas, pageWidth, pageHeight);
-      }
-    }
-    
-    function addCanvasToPdf(pdf, canvas, pageWidth, pageHeight){
-      const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
-      const imgWidth = canvas.width * ratio;
-      const imgHeight = canvas.height * ratio;
-      const x = (pageWidth - imgWidth) / 2;
-      const y = (pageHeight - imgHeight) / 2;
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
-    }
 
+    const canvas = await html2canvas(page, {
+      scale: 2,
+      backgroundColor: "#ffffff",
+      useCORS: true
+    });
+
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    const imgData = canvas.toDataURL("image/png");
+
+    while (heightLeft > 0) {
+
+      if (!first) pdf.addPage();
+
+      pdf.addImage(
+        imgData,
+        "PNG",
+        0,
+        position,
+        imgWidth,
+        imgHeight
+      );
+
+      heightLeft -= pageHeight;
+      position -= pageHeight;
+      first = false;
+    }
+  }
 
   pdf.save(`Analytics_Report_${year}.pdf`);
 
-  // ================================
-  // 6. CLEANUP
-  // ================================
+  // cleanup
   document.body.classList.remove("pdf-export");
   clone.remove();
 });
