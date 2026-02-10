@@ -313,17 +313,27 @@ document.addEventListener("click", async function (event) {
       useCORS: true,
       backgroundColor: "#ffffff",
       windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight
+      windowHeight: element.scrollHeight,
+      scrollY: -window.scrollY,
+  
     });
 
     const imgData = canvas.toDataURL("image/png");
 
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    const yOffset = Math.max(0, (pageHeight - imgHeight) / 2);
-
-    pdf.addImage(imgData, "PNG", 0, yOffset, imgWidth, imgHeight);
+    // calculate scale to FIT inside page
+    const ratio = Math.min(
+      pageWidth / canvas.width,
+      pageHeight / canvas.height
+    );
+    
+    const imgWidth = canvas.width * ratio;
+    const imgHeight = canvas.height * ratio;
+    
+    // center on page
+    const xOffset = (pageWidth - imgWidth) / 2;
+    const yOffset = (pageHeight - imgHeight) / 2;
+    
+    pdf.addImage(imgData, "PNG", xOffset, yOffset, imgWidth, imgHeight);
 
     firstPage = false;
   }
