@@ -47,7 +47,9 @@
             <!-- 2026 -->
             <section class="year-section mb-5" data-year="2026">
                 <h2>2026 - Data Table</h2>
-                
+
+                <!-- PAGE 1 (table + charts) -->
+                <div class="pdf-page">
                 
                 <table class="table table-bordered table-striped align-middle">
                 <thead>
@@ -80,14 +82,18 @@
                     <canvas id="line-chart-2026"></canvas>
                  </div>
                     
-                
-                
+                </div>
+                    
+                <!-- PAGE 2 (image only) -->
+                <div class="pdf-page">    
                     
                  <img id ="image-2026" 
-                 class="image-placeholder pdf-page"
+                 class="image-placeholder"
                  alt="No image added"
                  hidden
                  />
+                 </div>   
+                    
                  <input type="file" accept="image/*" id="image-input-2026" hidden/>
                 <!--Image Action-->
                 <div class="image-actions mt-2">
@@ -117,7 +123,10 @@
             <!-- 2025 -->
             <section class="year-section mb-5" data-year="2025">
                 <h2>2025 - Data Table</h2>
-               
+                
+
+                <!-- PAGE 1 (table + charts) -->
+                <div class="pdf-page">
                 <table class="table table-bordered table-striped align-middle">
                 <thead>
                     <tr>
@@ -146,13 +155,17 @@
                         <canvas id="line-chart-2025"></canvas>
                     </div>
 
-                 
+                </div>
+                    <!-- PAGE 2 (image only) -->
+                    <div class="pdf-page">
           
                     <img id ="image-2025" 
-                    class="image-placeholder pdf-page"
+                    class="image-placeholder"
                     alt="No image added"
                     hidden
                     />
+                    </div>
+                    
                     <input type="file" accept="image/*" id="image-input-2025" hidden/>
                     <!--Image Action -->
                     <div class="image-actions mt-2">
