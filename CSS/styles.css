@@ -169,6 +169,14 @@ main.container {
   display: none !important;
 }
 
+/* Fix only monthly comparison chart */
+#comparison-monthly-chart {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+
 
 
 
