@@ -491,50 +491,56 @@ async function waitForChartsToRender(section){
 document.getElementById("download-comparison")
 .addEventListener("click", async function(){
 
-  const section = document.querySelector(".comparison-section");
-  if (!section) return;
-
-  document.body.classList.add("print-mode");
-
-  //  REAL FIX
-  await waitForChartsToRender(section);
-
-  const canvas = await html2canvas(section,{
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-    windowWidth: section.scrollWidth,
-    windowHeight: section.scrollHeight
-  });
-
-  document.body.classList.remove("print-mode");
-
-  const imgData = canvas.toDataURL("image/png");
-
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p","mm","a4");
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  const imgWidth = pageWidth;
-  const imgHeight = canvas.height * imgWidth / canvas.width;
+  document.body.classList.add("print-mode");
 
-  let heightLeft = imgHeight;
-  let position = 0;
+  // helper capture function
+  async function captureElement(element){
+    await waitForChartsToRender(element);
 
-  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-  heightLeft -= pageHeight;
+    const canvas = await html2canvas(element,{
+      scale:2,
+      backgroundColor:"#ffffff",
+      useCORS:true
+    });
 
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+
+    const imgData = canvas.toDataURL("image/png");
+
+    pdf.addImage(imgData,"PNG",0,0,imgWidth,imgHeight);
     pdf.addPage();
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
   }
 
+  // ----------- CAPTURE IN ORDER -----------
+
+  // Title
+  await captureElement(document.querySelector(".comparison-section h2"));
+
+  // Top charts
+  await captureElement(document.querySelector("#comparison-insights"));
+
+  // Table
+  await captureElement(document.querySelector("#comparison-table-container"));
+
+  // Metric charts (one per page)
+  await captureElement(document.querySelector("#compare-nob").parentElement);
+  await captureElement(document.querySelector("#compare-hc").parentElement);
+  await captureElement(document.querySelector("#compare-lc").parentElement);
+  await captureElement(document.querySelector("#compare-cn").parentElement);
+
+  document.body.classList.remove("print-mode");
+
+  pdf.deletePage(pdf.getNumberOfPages()); // remove last blank
   pdf.save("Comparison_Report.pdf");
 });
+
 
 
 // ----------------------------------------
