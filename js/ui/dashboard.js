@@ -408,30 +408,29 @@ function renderComparisonTable(){
 function renderMonthlyComparisonChart(){
   const canvas = document.querySelector("#comparison-monthly-chart");
   if(!canvas) return;
+
   if(canvas._chart){
     canvas._chart.destroy();
     canvas._chart = null;
-}
-
+  }
 
   const years = getAvailableYears()
-  .filter(year => getEntriesByYear(year).length > 0)
-  .sort();
+    .filter(year => getEntriesByYear(year).length > 0)
+    .sort();
+
   if(!years.length) return;
 
-  // Month labels
   const labels = MONTHS;
 
-  // Build datasets per year
   const datasets = years.map((year, index) => {
 
     const entries = getEntriesByYear(year);
 
-    // 12 months → null means "no data"
-    const monthValues = new Array(12).fill(null);
+    // IMPORTANT: fill with 0 not null
+    const monthValues = new Array(12).fill(0);
 
     entries.forEach(e => {
-      monthValues[e.monthIndex] = e.nob;
+      monthValues[Number(e.monthIndex)] = Number(e.nob);
     });
 
     return {
@@ -444,7 +443,8 @@ function renderMonthlyComparisonChart(){
         "#dc2626",
         "#7c3aed",
         "#0891b2"
-      ][index % 6]
+      ][index % 6],
+      borderWidth: 1
     };
   });
 
@@ -456,12 +456,19 @@ function renderMonthlyComparisonChart(){
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 }
+        },
+        x: {
+          stacked: false
+        }
+      },
       plugins:{
         tooltip:{ enabled:false },
         legend:{ position:"top" }
-      },
-      scales:{
-        y:{ beginAtZero:true }
       }
     }
   });
