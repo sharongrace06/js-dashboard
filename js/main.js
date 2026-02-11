@@ -461,42 +461,52 @@ document.addEventListener("click", async function (event) {
 document.getElementById("download-comparison")
 .addEventListener("click", async function(){
 
-  //1. find the report area 
   const section = document.querySelector(".comparison-section");
   if (!section) return;
 
   // enter print mode
   document.body.classList.add("print-mode");
-  // allow layout to update
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise(r => setTimeout(r, 300));
 
-  // 2. capture canvas
+  // capture FULL section
   const canvas = await html2canvas(section, {
     scale: 2,
-    useCORS: true
+    useCORS: true,
+    backgroundColor: "#ffffff",
+    windowWidth: section.scrollWidth,
+    windowHeight: section.scrollHeight
   });
-  
-  const imgData = canvas.toDataURL("image/png");
-  console.log("canvas captured", canvas.width, canvas.height);
 
-  // 3. create PDF
+  const imgData = canvas.toDataURL("image/png");
+
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("p", "mm", "a4");
+  const pdf = new jsPDF("p","mm","a4");
 
   const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
 
-  // scale image to fit page width
   const imgWidth = pageWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  const imgHeight = canvas.height * imgWidth / canvas.width;
 
-  // add image
-  pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+  let heightLeft = imgHeight;
+  let position = 0;
 
-  // download
+  // MULTI PAGE CUT
+  while (heightLeft > 0) {
+
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+
+    heightLeft -= pageHeight;
+    position -= pageHeight;
+
+    if (heightLeft > 0) pdf.addPage();
+  }
+
   pdf.save("Comparison_Report.pdf");
 
-  // exit print mode
   document.body.classList.remove("print-mode");
+});
+
   
 
 
