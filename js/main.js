@@ -496,26 +496,12 @@ document.getElementById("download-comparison")
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  document.body.classList.add("print-mode");
+  // helper
+  async function addElementAsPage(element, title){
 
-  const blocks = document.querySelectorAll(`
-    .comparison-section > h2,
-    #comparison-insights,
-    #comparison-table-container,
-    .metric-heading,
-    #compare-nob,
-    #compare-hc,
-    #compare-lc,
-    #compare-cn
-  `);
+    await waitForChartsToRender(element);
 
-  let firstPage = true;
-
-  for (const block of blocks) {
-
-    await waitForChartsToRender(block);
-
-    const canvas = await html2canvas(block,{
+    const canvas = await html2canvas(element,{
       scale:2,
       backgroundColor:"#ffffff",
       useCORS:true
@@ -523,16 +509,32 @@ document.getElementById("download-comparison")
 
     const imgData = canvas.toDataURL("image/png");
 
-    const imgWidth = pageWidth;
+    pdf.addPage();
+
+    // title
+    pdf.setFontSize(14);
+    pdf.text(title, 10, 12);
+
+    const imgWidth = pageWidth - 20;
     const imgHeight = canvas.height * imgWidth / canvas.width;
 
-    if(!firstPage) pdf.addPage();
-    pdf.addImage(imgData,"PNG",0,10,imgWidth,imgHeight);
-
-    firstPage = false;
+    pdf.addImage(imgData,"PNG",10,18,imgWidth,imgHeight);
   }
 
-  document.body.classList.remove("print-mode");
+  // -------- COVER PAGE --------
+  pdf.setFontSize(18);
+  pdf.text("Comparison Insights Report",20,30);
+
+  // -------- SUMMARY CHARTS --------
+  await addElementAsPage(document.querySelector("#comparison-bar-chart").parentElement,"Yearly Totals Comparison");
+  await addElementAsPage(document.querySelector("#comparison-line-chart").parentElement,"Yearly Trend Comparison");
+  await addElementAsPage(document.querySelector("#comparison-table-container"),"Totals Table");
+
+  // -------- METRIC CHARTS --------
+  await addElementAsPage(document.querySelector("#compare-nob").parentElement,"NOB Monthly Comparison");
+  await addElementAsPage(document.querySelector("#compare-hc").parentElement,"HC Monthly Comparison");
+  await addElementAsPage(document.querySelector("#compare-lc").parentElement,"LC Monthly Comparison");
+  await addElementAsPage(document.querySelector("#compare-cn").parentElement,"CN Monthly Comparison");
 
   pdf.save("Comparison_Report.pdf");
 });
