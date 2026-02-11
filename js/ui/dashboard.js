@@ -409,72 +409,69 @@ function renderComparisonTable(){
 //------------------------------------------------------------
 function renderMonthlyComparisonChart(){
 
-  const metrics = ["nob","hc","lc","cn"];
-  const canvasIds = ["compare-nob","compare-hc","compare-lc","compare-cn"];
+  requestAnimationFrame(() => {
 
-  const years = getAvailableYears().sort();
-  if(!years.length) return;
+    const metrics = ["nob","hc","lc","cn"];
+    const canvasIds = ["compare-nob","compare-hc","compare-lc","compare-cn"];
 
-  metrics.forEach((metric,metricIndex)=>{
+    const years = getAvailableYears().sort();
+    if(!years.length) return;
 
-    const canvas = document.querySelector(`#${canvasIds[metricIndex]}`);
-    if(!canvas) return;
+    metrics.forEach((metric,metricIndex)=>{
 
-    if(canvas._chart){
-      canvas._chart.destroy();
-      canvas._chart = null;
-    }
+      const canvas = document.querySelector(`#${canvasIds[metricIndex]}`);
+      if(!canvas) return;
 
-    // prepare datasets (one dataset per year)
-    const datasets = years.map((year,yearIndex)=>{
+      // IMPORTANT: force proper size before chart creation
+      canvas.height = 420;
+      canvas.width = canvas.parentElement.clientWidth;
 
-      const entries = getEntriesByYear(year);
+      if(canvas._chart){
+        canvas._chart.destroy();
+        canvas._chart = null;
+      }
 
-      const monthValues = new Array(12).fill(null);
+      const datasets = years.map((year,yearIndex)=>{
+        const entries = getEntriesByYear(year);
+        const monthValues = new Array(12).fill(null);
 
-      entries.forEach(e=>{
-        monthValues[e.monthIndex] = e[metric];
+        entries.forEach(e=>{
+          monthValues[e.monthIndex] = e[metric];
+        });
+
+        const colors = [
+          "rgba(96,165,250,0.6)",
+          "rgba(52,211,153,0.6)",
+          "rgba(251,146,60,0.6)",
+          "rgba(244,114,182,0.6)"
+        ];
+
+        return {
+          label: year,
+          data: monthValues,
+          backgroundColor: colors[yearIndex % colors.length],
+          borderRadius:6
+        };
       });
 
-      const colors = [
-        "rgba(96,165,250,0.6)",
-        "rgba(52,211,153,0.6)",
-        "rgba(251,146,60,0.6)",
-        "rgba(244,114,182,0.6)"
-      ];
-
-      return {
-        label: year,
-        data: monthValues,
-        backgroundColor: colors[yearIndex % colors.length],
-        borderRadius:6
-      };
-    });
-
-    canvas._chart = new Chart(canvas,{
-      type:"bar",
-      data:{
-        labels: MONTHS,
-        datasets
-      },
-      options:{
-        responsive:true,
-        aspectRatio:2.3,
-        interaction:{ mode:"index", intersect:false },
-        scales:{
-          y:{ beginAtZero:true, ticks:{precision:0} }
-        },
-        plugins:{
-          legend:{ position:"top" },
-          title:{
-            display:true,
-            text:`${metric.toUpperCase()} Monthly Comparison (Year vs Year)`
+      canvas._chart = new Chart(canvas,{
+        type:"bar",
+        data:{ labels: MONTHS, datasets },
+        options:{
+          responsive:false,   // KEY FIX
+          maintainAspectRatio:false,
+          scales:{ y:{ beginAtZero:true, ticks:{precision:0} } },
+          plugins:{
+            legend:{ position:"top" },
+            title:{
+              display:true,
+              text:`${metric.toUpperCase()} Monthly Comparison (Year vs Year)`
+            }
           }
         }
-      }
-    });
-    
+      });
 
+    });
 
   });
 }
