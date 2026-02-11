@@ -27,6 +27,10 @@ import { renderMonthlyComparisonChart, destroyMonthlyComparisonChart } from "./u
 Chart.register({
   id: "alwaysShowValues",
   afterDatasetsDraw(chart) {
+
+    //  Only skip the heavy monthly comparison chart
+    if (chart.canvas.id === "comparison-monthly-chart") return;
+
     const { ctx } = chart;
     ctx.save();
 
@@ -34,22 +38,23 @@ Chart.register({
       const meta = chart.getDatasetMeta(datasetIndex);
 
       meta.data.forEach((element, index) => {
-        const value = dataset.data[index];
 
+        if (!element || element.hidden) return;
+
+        const value = dataset.data[index];
         if (value === null || value === undefined) return;
+
+        const position = element.tooltipPosition();
+        if (!position || isNaN(position.x) || isNaN(position.y)) return;
 
         ctx.fillStyle = "#111";
         ctx.font = "bold 12px Inter, sans-serif";
         ctx.textAlign = "center";
 
-        const position = element.tooltipPosition();
-
-        // For bar charts (above bar)
         if (chart.config.type === "bar") {
           ctx.fillText(value, position.x, position.y - 8);
         }
 
-        // For line charts (above point)
         if (chart.config.type === "line") {
           ctx.fillText(value, position.x, position.y - 10);
         }
@@ -59,6 +64,7 @@ Chart.register({
     ctx.restore();
   }
 });
+
 
 
 //-----------------------------------------------------------------
