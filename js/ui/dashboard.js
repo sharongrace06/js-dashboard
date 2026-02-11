@@ -456,14 +456,11 @@ function renderMonthlyComparisonChart(){
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
+      aspectRatio: 2.2,
       scales: {
         y: {
           beginAtZero: true,
           ticks: { precision: 0 }
-        },
-        x: {
-          stacked: false
         }
       },
       plugins:{
@@ -471,6 +468,7 @@ function renderMonthlyComparisonChart(){
         legend:{ position:"top" }
       }
     }
+
   });
 }
 
