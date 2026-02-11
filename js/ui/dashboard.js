@@ -407,7 +407,12 @@ function renderComparisonTable(){
 //bar chart -- > Monthly Comparison Chart (YEAR vs YEAR per MONTH)
 function renderMonthlyComparisonChart(){
   const canvas = document.querySelector("#comparison-monthly-chart");
-  if(!canvas || canvas._chart) return;
+  if(!canvas) return;
+  if(canvas._chart){
+    canvas._chart.destroy();
+    canvas._chart = null;
+}
+
 
   const years = getAvailableYears().sort();
   if(!years.length) return;
