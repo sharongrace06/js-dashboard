@@ -464,18 +464,18 @@ document.getElementById("download-comparison")
   const section = document.querySelector(".comparison-section");
   if (!section) return;
 
-  // enter print mode
   document.body.classList.add("print-mode");
-  await new Promise(r => setTimeout(r, 300));
+  await new Promise(r => setTimeout(r, 400)); // allow charts to finish drawing
 
-  // capture FULL section
-  const canvas = await html2canvas(section, {
+  const canvas = await html2canvas(section,{
     scale: 2,
     useCORS: true,
     backgroundColor: "#ffffff",
     windowWidth: section.scrollWidth,
     windowHeight: section.scrollHeight
   });
+
+  document.body.classList.remove("print-mode");
 
   const imgData = canvas.toDataURL("image/png");
 
@@ -491,20 +491,18 @@ document.getElementById("download-comparison")
   let heightLeft = imgHeight;
   let position = 0;
 
-  // MULTI PAGE CUT
+  // MULTI PAGE LOGIC
+  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+  heightLeft -= pageHeight;
+
   while (heightLeft > 0) {
-
+    position = heightLeft - imgHeight;
+    pdf.addPage();
     pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-
     heightLeft -= pageHeight;
-    position -= pageHeight;
-
-    if (heightLeft > 0) pdf.addPage();
   }
 
   pdf.save("Comparison_Report.pdf");
-
-  document.body.classList.remove("print-mode");
 });
 
   
