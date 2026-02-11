@@ -187,6 +187,21 @@ main.container {
 }
 
 
+/* Metric comparison section headings */
+.metric-heading {
+  background: #111;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  margin: 60px auto 20px auto;
+  max-width: 900px;
+  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 18px;
+}
+
+
 
 
 
