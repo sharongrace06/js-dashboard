@@ -417,6 +417,11 @@ function renderMonthlyComparisonChart(){
     canvas._chart = null;
   }
 
+  /*  CRITICAL FIX — reset canvas drawing buffer */
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+
   const years = getAvailableYears();
   if(!years.length) return;
 
