@@ -473,7 +473,7 @@ function renderMonthlyComparisonChart(){
         }
       }
     });
-    canvas._chart = chart;
+    
 
 
   });
