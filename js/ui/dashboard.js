@@ -414,7 +414,9 @@ function renderMonthlyComparisonChart(){
 }
 
 
-  const years = getAvailableYears().sort();
+  const years = getAvailableYears()
+  .filter(year => getEntriesByYear(year).length > 0)
+  .sort();
   if(!years.length) return;
 
   // Month labels
