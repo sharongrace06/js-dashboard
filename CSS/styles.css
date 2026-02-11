@@ -169,6 +169,29 @@ main.container {
   display: none !important;
 }
 
+
+/* ================= PDF SAFE BLOCKS ================= */
+
+/* Never split charts across pages */
+.metric-block {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 40px;
+}
+
+/* Force each metric to start cleanly */
+.metric-block:not(:first-child) {
+  page-break-before: always;
+}
+
+/* Protect canvases */
+.metric-block canvas {
+  display: block;
+  width: 100% !important;
+  height: 420px !important;
+}
+
+
 /* ===== Monthly Metric Comparison Charts ===== */
 #compare-nob,
 #compare-hc,
