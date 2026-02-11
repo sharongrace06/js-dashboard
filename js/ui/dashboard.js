@@ -2,7 +2,7 @@
 // The main function of dashboard.js is:DOM rendering only (NO state, NO logic) 
 
 import { MONTHS } from "../utils/helpers.js";
-import { getAvailableYears, totalMetrics } from "../state/store.js";
+import { getAvailableYears, totalMetrics, getEntriesByYear } from "../state/store.js";
 
 
 
@@ -404,6 +404,74 @@ function renderComparisonTable(){
 
 }
 
+//bar chart -- > Monthly Comparison Chart (YEAR vs YEAR per MONTH)
+function renderMonthlyComparisonChart(){
+  const canvas = document.querySelector("#comparison-monthly-chart");
+  if(!canvas || canvas._chart) return;
+
+  const years = getAvailableYears().sort();
+  if(!years.length) return;
+
+  // Month labels
+  const labels = MONTHS;
+
+  // Build datasets per year
+  const datasets = years.map((year, index) => {
+
+    const entries = getEntriesByYear(year);
+
+    // 12 months → null means "no data"
+    const monthValues = new Array(12).fill(null);
+
+    entries.forEach(e => {
+      monthValues[e.monthIndex] = e.nob;
+    });
+
+    return {
+      label: year,
+      data: monthValues,
+      backgroundColor: [
+        "#2563eb",
+        "#16a34a",
+        "#ea580c",
+        "#dc2626",
+        "#7c3aed",
+        "#0891b2"
+      ][index % 6]
+    };
+  });
+
+  canvas._chart = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels,
+      datasets
+    },
+    options: {
+      responsive: true,
+      plugins:{
+        tooltip:{ enabled:false },
+        legend:{ position:"top" }
+      },
+      scales:{
+        y:{ beginAtZero:true }
+      }
+    }
+  });
+}
+
+
+
+// to destroy the chart
+function destroyMonthlyComparisonChart(){
+  const canvas = document.querySelector("#comparison-monthly-chart");
+  if(canvas && canvas._chart){
+    canvas._chart.destroy();
+    canvas._chart = null;
+  }
+}
+
+
 
 
 export { 
@@ -417,5 +485,7 @@ export {
     destroyComparisonBarChart,
     renderComparisonLineChart,
     destroyComparisonLineChart,
-    renderComparisonTable
+    renderComparisonTable,
+    renderMonthlyComparisonChart,
+    destroyMonthlyComparisonChart
  };
