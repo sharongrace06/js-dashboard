@@ -169,6 +169,15 @@ main.container {
   display: none !important;
 }
 
+/* Fix ONLY monthly comparison chart */
+#comparison-monthly-chart {
+  width: 100% !important;
+  height: auto !important;
+}
+
+#comparison-monthly-chart.canvas-fixed {
+  height: 420px !important;
+}
 
 
 
