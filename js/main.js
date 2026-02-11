@@ -451,6 +451,36 @@ document.addEventListener("click", async function (event) {
 });
 
 
+//helper function 
+async function waitForChartsToRender(section){
+
+  const canvases = section.querySelectorAll("canvas");
+
+  const waiters = [];
+
+  canvases.forEach(canvas => {
+    if(canvas._chart){
+
+      waiters.push(new Promise(resolve => {
+        canvas._chart.options.animation = {
+          duration: 0,
+          onComplete: resolve
+        };
+
+        canvas._chart.update();
+      }));
+
+    } else {
+      // non chart canvas → resolve instantly
+      waiters.push(Promise.resolve());
+    }
+  });
+
+  await Promise.all(waiters);
+
+  // allow browser paint
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+}
 
 
 
@@ -465,7 +495,9 @@ document.getElementById("download-comparison")
   if (!section) return;
 
   document.body.classList.add("print-mode");
-  await new Promise(r => setTimeout(r, 400)); // allow charts to finish drawing
+
+  //  REAL FIX
+  await waitForChartsToRender(section);
 
   const canvas = await html2canvas(section,{
     scale: 2,
@@ -491,7 +523,6 @@ document.getElementById("download-comparison")
   let heightLeft = imgHeight;
   let position = 0;
 
-  // MULTI PAGE LOGIC
   pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
   heightLeft -= pageHeight;
 
@@ -505,11 +536,6 @@ document.getElementById("download-comparison")
   pdf.save("Comparison_Report.pdf");
 });
 
-  
-
-
-
-});
 
 // ----------------------------------------
 // Mark UI-only elements (hidden in PDF)
