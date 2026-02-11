@@ -487,7 +487,6 @@ async function waitForChartsToRender(section){
 
   
 // download - Comparison Section 
-
 document.getElementById("download-comparison")
 .addEventListener("click", async function(){
 
@@ -499,47 +498,45 @@ document.getElementById("download-comparison")
 
   document.body.classList.add("print-mode");
 
-  // helper capture function
-  async function captureElement(element){
-    await waitForChartsToRender(element);
+  const blocks = document.querySelectorAll(`
+    .comparison-section > h2,
+    #comparison-insights,
+    #comparison-table-container,
+    .metric-heading,
+    #compare-nob,
+    #compare-hc,
+    #compare-lc,
+    #compare-cn
+  `);
 
-    const canvas = await html2canvas(element,{
+  let firstPage = true;
+
+  for (const block of blocks) {
+
+    await waitForChartsToRender(block);
+
+    const canvas = await html2canvas(block,{
       scale:2,
       backgroundColor:"#ffffff",
       useCORS:true
     });
 
+    const imgData = canvas.toDataURL("image/png");
+
     const imgWidth = pageWidth;
     const imgHeight = canvas.height * imgWidth / canvas.width;
 
-    const imgData = canvas.toDataURL("image/png");
+    if(!firstPage) pdf.addPage();
+    pdf.addImage(imgData,"PNG",0,10,imgWidth,imgHeight);
 
-    pdf.addImage(imgData,"PNG",0,0,imgWidth,imgHeight);
-    pdf.addPage();
+    firstPage = false;
   }
-
-  // ----------- CAPTURE IN ORDER -----------
-
-  // Title
-  await captureElement(document.querySelector(".comparison-section h2"));
-
-  // Top charts
-  await captureElement(document.querySelector("#comparison-insights"));
-
-  // Table
-  await captureElement(document.querySelector("#comparison-table-container"));
-
-  // Metric charts (one per page)
-  await captureElement(document.querySelector("#compare-nob").parentElement);
-  await captureElement(document.querySelector("#compare-hc").parentElement);
-  await captureElement(document.querySelector("#compare-lc").parentElement);
-  await captureElement(document.querySelector("#compare-cn").parentElement);
 
   document.body.classList.remove("print-mode");
 
-  pdf.deletePage(pdf.getNumberOfPages()); // remove last blank
   pdf.save("Comparison_Report.pdf");
 });
+
 
 
 
