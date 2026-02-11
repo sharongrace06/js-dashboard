@@ -404,71 +404,114 @@ function renderComparisonTable(){
 
 }
 
-//bar chart -- > Monthly Comparison Chart (YEAR vs YEAR per MONTH)
+//----------------------------------------------------------
+// MONTHLY PERFORMANCE COMPOSITION (All years combined)
+//------------------------------------------------------------
 function renderMonthlyComparisonChart(){
   const canvas = document.querySelector("#comparison-monthly-chart");
   if(!canvas) return;
 
+  // destroy old
   if(canvas._chart){
     canvas._chart.destroy();
     canvas._chart = null;
   }
 
-  const years = getAvailableYears()
-    .filter(year => getEntriesByYear(year).length > 0)
-    .sort();
-
+  const years = getAvailableYears();
   if(!years.length) return;
 
-  const labels = MONTHS;
+  // --------------------------------------------------
+  // Combine all years → month wise totals
+  // --------------------------------------------------
+  const monthlyTotals = new Array(12).fill(null).map(()=>({
+    nob:0, hc:0, lc:0, cn:0
+  }));
 
-  const datasets = years.map((year, index) => {
-
+  years.forEach(year=>{
     const entries = getEntriesByYear(year);
-
-    // IMPORTANT: fill with 0 not null
-    const monthValues = new Array(12).fill(0);
-
-    entries.forEach(e => {
-      monthValues[Number(e.monthIndex)] = Number(e.nob);
+    entries.forEach(e=>{
+      monthlyTotals[e.monthIndex].nob += e.nob;
+      monthlyTotals[e.monthIndex].hc += e.hc;
+      monthlyTotals[e.monthIndex].lc += e.lc;
+      monthlyTotals[e.monthIndex].cn += e.cn;
     });
-
-    return {
-      label: year,
-      data: monthValues,
-      backgroundColor: [
-        "#2563eb",
-        "#16a34a",
-        "#ea580c",
-        "#dc2626",
-        "#7c3aed",
-        "#0891b2"
-      ][index % 6],
-      borderWidth: 1
-    };
   });
 
-  canvas._chart = new Chart(canvas, {
-    type: "bar",
-    data: {
-      labels,
+  // --------------------------------------------------
+  // Pastel datasets
+  // --------------------------------------------------
+  const datasets = [
+    {
+      label:"NOB",
+      data: monthlyTotals.map(m=>m.nob),
+      backgroundColor:"rgba(96,165,250,0.45)",
+      borderColor:"rgba(96,165,250,1)",
+      borderWidth:1.5,
+      borderRadius:6
+    },
+    {
+      label:"HC",
+      data: monthlyTotals.map(m=>m.hc),
+      backgroundColor:"rgba(244,114,182,0.45)",
+      borderColor:"rgba(244,114,182,1)",
+      borderWidth:1.5,
+      borderRadius:6
+    },
+    {
+      label:"LC",
+      data: monthlyTotals.map(m=>m.lc),
+      backgroundColor:"rgba(251,191,36,0.45)",
+      borderColor:"rgba(251,191,36,1)",
+      borderWidth:1.5,
+      borderRadius:6
+    },
+    {
+      label:"CN",
+      data: monthlyTotals.map(m=>m.cn),
+      backgroundColor:"rgba(52,211,153,0.45)",
+      borderColor:"rgba(52,211,153,1)",
+      borderWidth:1.5,
+      borderRadius:6
+    }
+  ];
+
+  // --------------------------------------------------
+  // Create chart
+  // --------------------------------------------------
+  canvas._chart = new Chart(canvas,{
+    type:"bar",
+    data:{
+      labels: MONTHS,
       datasets
     },
-    options: {
-      responsive: true,
-      aspectRatio: 2.2,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { precision: 0 }
+    options:{
+      responsive:true,
+      aspectRatio:2.3,
+      interaction:{
+        mode:"index",
+        intersect:false
+      },
+      scales:{
+        y:{
+          beginAtZero:true,
+          ticks:{ precision:0 }
         }
       },
       plugins:{
-        tooltip:{ enabled:false },
-        legend:{ position:"top" }
+        tooltip:{ enabled:true },
+        legend:{
+          position:"top",
+          labels:{
+            boxWidth:18,
+            padding:18
+          }
+        },
+        title:{
+          display:true,
+          text:"Monthly Performance Composition (All Years Combined)"
+        }
       }
     }
-
   });
 }
 
