@@ -15,6 +15,8 @@ import { renderLineChart, destroyLineChart } from "./ui/dashboard.js";
 import { renderComparisonBarChart, destroyComparisonBarChart } from "./ui/dashboard.js";
 import {renderComparisonLineChart, destroyComparisonLineChart } from "./ui/dashboard.js";
 import { renderComparisonTable } from "./ui/dashboard.js";
+import { renderMonthlyComparisonChart, destroyMonthlyComparisonChart } from "./ui/dashboard.js";
+
 
 
 
@@ -162,8 +164,13 @@ form.addEventListener("submit", function(event){
 
     renderComparisonTable();
 
+    destroyMonthlyComparisonChart();
+    renderMonthlyComparisonChart();
+
 
     applyNoPrintTags();
+    
+
 
 
     //Form Reset
@@ -218,8 +225,12 @@ document.addEventListener("click", function(event){
 
     renderComparisonTable();
 
+    destroyMonthlyComparisonChart();
+    renderMonthlyComparisonChart();
+
 
     applyNoPrintTags();
+  
 
 });
 
@@ -514,3 +525,5 @@ renderComparisonBarChart();
 renderComparisonLineChart();
 renderComparisonTable();
 applyNoPrintTags();
+renderMonthlyComparisonChart();
+
