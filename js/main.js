@@ -485,23 +485,70 @@ async function waitForChartsToRender(section){
 
 
 
-  
+//------------------------------------------  
 // download - Comparison Section 
+//------------------------------------------
 document.getElementById("download-comparison")
 .addEventListener("click", async function(){
 
+  const section = document.querySelector(".comparison-section");
+
+  // clone clean copy
+  const clone = section.cloneNode(true);
+  clone.style.position = "fixed";
+  clone.style.left = "-9999px";
+  clone.style.top = "0";
+  clone.style.width = "1100px";
+  clone.style.background = "white";
+
+  document.body.appendChild(clone);
+
+  // remove buttons
+  clone.querySelectorAll("button").forEach(b => b.remove());
+
+  // ----- convert charts to images -----
+  // convert each ORIGINAL chart into an image inside the CLONE
+  const cloneCanvases = clone.querySelectorAll("canvas");
+  
+  for (const cloneCanvas of cloneCanvases) {
+  
+    const originalCanvas = document.getElementById(cloneCanvas.id);
+    if (!originalCanvas) continue;
+  
+    const chart = Chart.getChart(originalCanvas);
+    if (!chart) continue;
+  
+    const img = document.createElement("img");
+    img.src = chart.toBase64Image();
+    img.style.width = "100%";
+    img.style.display = "block";
+  
+    cloneCanvas.replaceWith(img);
+  }
+
+    if(!chart) continue;
+
+    const img = document.createElement("img");
+    img.src = chart.toBase64Image();
+    img.style.width = "100%";
+
+    canvas.replaceWith(img);
+  }
+
+  // ----- create pdf -----
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p","mm","a4");
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  // helper
-  async function addElementAsPage(element, title){
+  const pages = clone.querySelectorAll(".pdf-page");
 
-    await waitForChartsToRender(element);
+  let first = true;
 
-    const canvas = await html2canvas(element,{
+  for(const page of pages){
+
+    const canvas = await html2canvas(page,{
       scale:2,
       backgroundColor:"#ffffff",
       useCORS:true
@@ -509,34 +556,18 @@ document.getElementById("download-comparison")
 
     const imgData = canvas.toDataURL("image/png");
 
-    pdf.addPage();
-
-    // title
-    pdf.setFontSize(14);
-    pdf.text(title, 10, 12);
-
-    const imgWidth = pageWidth - 20;
+    const imgWidth = pageWidth;
     const imgHeight = canvas.height * imgWidth / canvas.width;
 
-    pdf.addImage(imgData,"PNG",10,18,imgWidth,imgHeight);
+    if(!first) pdf.addPage();
+
+    pdf.addImage(imgData,"PNG",0,0,imgWidth,imgHeight);
+
+    first = false;
   }
 
-  // -------- COVER PAGE --------
-  pdf.setFontSize(18);
-  pdf.text("Comparison Insights Report",20,30);
-
-  // -------- SUMMARY CHARTS --------
-  await addElementAsPage(document.querySelector("#comparison-bar-chart").parentElement,"Yearly Totals Comparison");
-  await addElementAsPage(document.querySelector("#comparison-line-chart").parentElement,"Yearly Trend Comparison");
-  await addElementAsPage(document.querySelector("#comparison-table-container"),"Totals Table");
-
-  // -------- METRIC CHARTS --------
-  await addElementAsPage(document.querySelector("#compare-nob").parentElement,"NOB Monthly Comparison");
-  await addElementAsPage(document.querySelector("#compare-hc").parentElement,"HC Monthly Comparison");
-  await addElementAsPage(document.querySelector("#compare-lc").parentElement,"LC Monthly Comparison");
-  await addElementAsPage(document.querySelector("#compare-cn").parentElement,"CN Monthly Comparison");
-
   pdf.save("Comparison_Report.pdf");
+  clone.remove();
 });
 
 
