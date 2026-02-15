@@ -485,8 +485,9 @@ async function waitForChartsToRender(section){
 
 
 
-//------------------------------------------  
-// download - Comparison Section 
+
+//------------------------------------------
+// download - Comparison Section
 //------------------------------------------
 document.getElementById("download-comparison")
 .addEventListener("click", async function(){
@@ -507,32 +508,22 @@ document.getElementById("download-comparison")
   clone.querySelectorAll("button").forEach(b => b.remove());
 
   // ----- convert charts to images -----
-  // convert each ORIGINAL chart into an image inside the CLONE
   const cloneCanvases = clone.querySelectorAll("canvas");
-  
+
   for (const cloneCanvas of cloneCanvases) {
-  
+
     const originalCanvas = document.getElementById(cloneCanvas.id);
     if (!originalCanvas) continue;
-  
+
     const chart = Chart.getChart(originalCanvas);
     if (!chart) continue;
-  
+
     const img = document.createElement("img");
     img.src = chart.toBase64Image();
     img.style.width = "100%";
     img.style.display = "block";
-  
+
     cloneCanvas.replaceWith(img);
-  }
-
-    if(!chart) continue;
-
-    const img = document.createElement("img");
-    img.src = chart.toBase64Image();
-    img.style.width = "100%";
-
-    canvas.replaceWith(img);
   }
 
   // ----- create pdf -----
@@ -556,19 +547,42 @@ document.getElementById("download-comparison")
 
     const imgData = canvas.toDataURL("image/png");
 
-    const imgWidth = pageWidth;
-    const imgHeight = canvas.height * imgWidth / canvas.width;
+    let imgWidth = pageWidth;
+    let imgHeight = canvas.height * imgWidth / canvas.width;
 
-    if(!first) pdf.addPage();
+    // ---- FIRST PAGE: FIT WHOLE DASHBOARD ----
+    if(first){
 
-    pdf.addImage(imgData,"PNG",0,0,imgWidth,imgHeight);
+      const ratio = Math.min(
+        pageWidth / imgWidth,
+        pageHeight / imgHeight
+      );
 
-    first = false;
+      imgWidth *= ratio;
+      imgHeight *= ratio;
+
+      pdf.addImage(
+        imgData,
+        "PNG",
+        (pageWidth - imgWidth)/2,
+        (pageHeight - imgHeight)/2,
+        imgWidth,
+        imgHeight
+      );
+
+      first = false;
+      continue;
+    }
+
+    // ---- OTHER PAGES: NORMAL FULL CHART ----
+    pdf.addPage();
+    pdf.addImage(imgData,"PNG",0,0,pageWidth,imgHeight);
   }
 
   pdf.save("Comparison_Report.pdf");
   clone.remove();
 });
+
 
 
 
